@@ -1,5 +1,4 @@
-
-name: aseprite
+name: aseprite-linux
 
 on:
   workflow_dispatch:
@@ -10,16 +9,22 @@ on:
 
 jobs:
   build:
-    runs-on: windows-2025
+    runs-on: ubuntu-22.04   # Linux runner
     steps:
-
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y cmake g++ libx11-dev libxcursor-dev libxrandr-dev \
+            libxi-dev libfontconfig1-dev libgl1-mesa-dev libpng-dev git
+
       - name: Build
         id: build
-        shell: cmd
-        run: call build.cmd
+        run: |
+          chmod +x build.sh
+          ./build.sh
         env:
           ASEPRITE_VERSION: ${{ github.event.inputs.version }}
 
@@ -27,5 +32,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: aseprite-${{ steps.build.outputs.ASEPRITE_VERSION }}
-          path: github
+          path: build
           if-no-files-found: error
